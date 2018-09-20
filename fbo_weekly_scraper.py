@@ -7,6 +7,8 @@ import os
 import xml.etree.ElementTree as ET
 
 
+url = 'ftp://ftp.fbo.gov/datagov/FBOFullXML.xml'
+
 
 def write_weekly_file(url):
     '''Given the FBO FTP weekly url, download and write the xml.
@@ -88,17 +90,34 @@ def elem2json(elem, strip=True):
     return json.dumps(elem_to_dict(elem,strip=strip))
 
 
-if __name__ == "__main__":
-    url = 'ftp://ftp.fbo.gov/datagov/FBOFullXML.xml'
-    # This takes a few minutes (roughly 1.7GB to write)
-    file_path = write_weekly_file(url)
+
+def save_json_data(file_path,elem_json):
+   json_file_path = file_path.replace("xml","json")
+   with open(json_file_path, 'w') as f:
+        json.dump(elem_json, f) 
+
+
+def get_json_from_xml_file(file_path=None , save=True):
+     # This takes a few minutes (roughly 1.7GB to write)
+    if file_path is None:
+        print("downloading data")
+        file_path = write_weekly_file(url)
+    else:
+        pass
     # Create an ElementTree object from the xml
     tree = ET.parse(file_path)
     # As an Element, root has a tag and a dictionary of attributes
     root = tree.getroot()
     # Create JSON string from root (an Element object)
+    print("coverting xml to json")
     elem_json = elem2json(root)
-    # Write the json
-    json_file_path = file_path.replace("xml","json")
-    with open(json_file_path, 'w') as f:
-        json.dump(elem_json, f)
+    if save:
+        save_json_data(file_path,elem_json)
+        print("saving json data")
+    else:
+        return elem_json
+
+
+if __name__ == "__main__": 
+   get_json_from_xml_file()
+    
